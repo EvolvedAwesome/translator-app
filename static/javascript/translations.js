@@ -1,8 +1,7 @@
 let api_post_translations = (text) => {
     return $.ajax({
-        type: "POST",
-        url: "https://" + document.location.hostname + "/api/get_completions.json",
-        data: JSON.stringify({ "search_phrase": text }),
+        type: "GET",
+        url: "http://" + document.location.host + "/api/get_completions.json?search_phrase=" + text,
         contentType: "application/json",
         async: true,
         error: function (result, status) {
@@ -17,19 +16,15 @@ let get_translations = async () => {
     let phrase = $('#translation_from_textbox').val();
 
     let translations_list = await api_post_translations(phrase);
-    // Test Translations 
-    /*
-    translations = [
-        {"yes":"yes_translated"},
-        {"no":"no_translated"}
-    ];*/
 
     let table_html = '';
     jQuery.each(translations_list, function(idx, row) {
         table_html += '<tr>';
-        jQuery.each(row, function(phrase, translation) {
-            table_html += "<td>" + JSON.stringify(phrase).replace(/\"/g, "") + "</td>"
-            table_html += "<td>" + JSON.stringify(translation).replace(/\"/g, "") + "</td>"
+        jQuery.each(row, function(key, translation) {
+            if (key !== "id") {
+                //table_html += "<td>" + JSON.stringify(phrase).replace(/\"/g, "") + "</td>"
+                table_html += "<td>" + JSON.stringify(translation).replace(/\"/g, "") + "</td>"
+            }
         });
         table_html += '</tr>';
     })
@@ -43,8 +38,8 @@ let add_translation = async () => {
 
     let response = await $.ajax({
         type: "POST",
-        url: "https://" + document.location.hostname + "/api/add_completion.json",
-        data: JSON.stringify({ "english_text": phrase, "translated_text": translation }),
+        url: "http://" + document.location.host + "/api/add_completion.json",
+        data: JSON.stringify({ "english_text": phrase, "translation_text": translation }),
         contentType: "application/json",
         async: true,
         error: function (result, status) {
@@ -54,8 +49,9 @@ let add_translation = async () => {
 
     console.log(response);
 
-    $('#translation_from_textbox').empty();
-    $('#translation_to_textbox').empty();
+    $('#translation_from_textbox').val('');
+    $('#translation_to_textbox').val('');
+    get_translations();
 }
 
 $(document).ready(function() {
@@ -64,6 +60,12 @@ $(document).ready(function() {
 
     // Translate on typing 
     $('#translation_from_textbox').on('input', get_translations);
+    $('#translation_to_textbox').keypress(function (e) {
+        if(e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            add_translation();
+        }
+    });
 
     // Add Phrase/translation combo on button click
     $('#translation_submit').click(add_translation);
