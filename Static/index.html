@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheet/CSS -->
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+    <!-- Javascript responsible for interacting with the API -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="javascript/translations.js" type="text/javascript"></script>
+    <title>Translation utility</title>
+</head>
+<body>
+    <h2>Translation utility</h2>
+    <div id="translations_box">
+        <div id="translation_input_box">
+            <table class="translation_table" id="translation_input_table">
+                <tbody class="table_header">
+                    <tr>
+                        <td>Phrase:</td>
+                        <td>Translation:</td>
+                    </tr>
+                    <tr class="table_row">
+                        <td><textarea type="text" id="translation_from_textbox"></textarea></td>
+                        <td><textarea type="text" id="translation_to_textbox"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button id="translation_submit" title="Add the phrase to the phrase dictionary">Add Phrase</button>
+        </div>
+        <br>
+    </div>
+
+    <h2>Suggested Translations</h2>
+    <div id="suggested_phrases_box">
+        <table class="translation_table">
+            <tbody class="table_header">
+                <tr>
+                    <td>Phrase</td>
+                    <td>Translation</td>
+                </tr>
+            </tbody>
+            <tbody id="translation_suggestions"></tbody>
+        </table>
+    </div>
+</body>
+</html>
