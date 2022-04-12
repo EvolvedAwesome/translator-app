@@ -1,5 +1,43 @@
 body {
     text-align: center;
+    font-family: sans-serif;
+    background: #FFF;
+    color: #333;
+}
+
+#translations_box {
+    background-color: grey;
+    padding: 10px;
+    color: white
+}
+
+#translation_input_box button {
+    background-color: #333;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+#translation_input_box button:hover {
+    cursor: pointer;
+    background-color: black;
+}
+
+#translation_input_box textarea {
+    width: 100%;
+    height: 150px;
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    font-size: 16px;
+    resize: none;
 }
 
 .translation_table {
@@ -17,15 +55,59 @@ body {
     min-width: 25vw;
 }
 
+tbody#translation_suggestions {
+    cursor: pointer;
+}
+
 tbody#translation_suggestions tr {
     height: 3vh; 
 }
 
 tbody#translation_suggestions td {
     width: 30vw;
+    padding: 10px;
     text-align: center;
+    border-radius: 10px;
 }
 
-tbody#translation_suggestions tr:hover {
-    background-color: gray;
+tbody#translation_suggestions td:hover {
+    color: white;
+    background-color: #333;
+}
+
+div#error_box {
+    width: 50vw;
+    height: 5vw;
+    background-color: rgba(255,0,0,0.5);
+    color: white;
+    border-radius: 25px;
+    border-style: solid 1px black;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+}
+
+
+.dropdown-menu {
+    display: none;
+    z-index: 1000;
+    position: absolute;
+    overflow: hidden;
+    border: 1px solid #CCC;
+    white-space: nowrap;
+    border-radius: 5px;
+    padding: 0;
+    background-color: #DEF;
+}
+
+.dropdown-menu li {
+    padding: 8px 12px;
+    cursor: pointer;
+    list-style-type: none;
+    transition: all .3s ease;
+    user-select: none;
+}
+
+.dropdown-menu li:hover {
+    background-color: #DEF;
 }

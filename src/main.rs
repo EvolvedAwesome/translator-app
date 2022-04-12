@@ -29,29 +29,74 @@ struct Phrase {
     translation_text: String,
 }
 
+// Produce a POST body contents structure that we can recieve to specify a single completion
+#[derive(Deserialize)]
+struct CompletionID {
+    translation_id: i64,
+}
+
+#[derive(Serialize)]
+struct ReturnData {
+    status: &'static str,
+    message: Option<String>,
+    data: Option<Vec<Phrase>>
+}
+
 #[post("/add_completion.json", data = "<post_data>")]
-async fn add_completion(db: TranslationsDb, post_data: Json<Phrase>) -> Result<Json<&'static str>> {
+async fn add_completion(db: TranslationsDb, post_data: Json<Phrase>) -> Result<Json<ReturnData>> {
     db.run(move |conn| {
         diesel::insert_into(phrase::table)
             .values(&*post_data)
             .execute(conn)
     }).await?;
-    Ok(Json("Success!"))
+
+    Ok(Json(ReturnData {
+        status: "Success!",
+        message: Some(format!("Added completion.")),
+        data: None
+    }))
 }
 
 #[get("/get_completions.json?<search_phrase>")]
-async fn get_completions(db: TranslationsDb, search_phrase: String) -> Result<Json<Vec<Phrase>>> {
-    let data: Vec<Phrase> = db.run(move |conn| {
-        phrase::table.filter(phrase::english_text.like(format!("%{}%", search_phrase))).load(conn)
+async fn get_completions(db: TranslationsDb, search_phrase: String) -> Result<Json<ReturnData>> {
+    let search_phrase_out = search_phrase.clone();
+    let data= db.run(move |conn| {
+        phrase::table.filter(phrase::english_text
+            .like(format!("%{}%", search_phrase)))
+            .load(conn)
     }).await?; 
 
-    Ok(Json(data))
+    Ok(Json(ReturnData {
+        status: "Success!",
+        message: Some(format!("Found completions for \"{}\"", search_phrase_out)),
+        data: Some(data),
+    }))
 }
 
+#[post("/remove_completion.json?", data = "<post_data>")]
+async fn remove_completions(db: TranslationsDb, post_data: Json<CompletionID>) -> Result<Json<ReturnData>>{
+    let id: i64 = post_data.translation_id.clone();
+    db.run(move |conn| {
+        diesel::delete(phrase::table)
+            .filter(phrase::id.eq(id))
+            .execute(conn)
+    }).await?; 
+
+    Ok(Json(ReturnData {
+        status: "Success!",
+        message: Some(format!("Removed completion with id {}", id)),
+        data: None,
+    }))
+}
+
+// Launch the web-server, composed of
+// Static assets @ "/" -> E.g. the page, html, css, js and images
+// The database connection pool (expressed as a Rocket fairing)
+// The API routes @ "/api/"
 #[launch]
 async fn rocket() -> _ {
     rocket::build()
         .mount("/", FileServer::from(relative!("static")))
         .attach(TranslationsDb::fairing())
-        .mount("/api", routes![add_completion, get_completions])
+        .mount("/api/1.0/", routes![add_completion, get_completions, remove_completions])
 }
