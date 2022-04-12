@@ -4,6 +4,8 @@ Manual translator app that uses previously completed translations to suggest new
 
 Project restricted to using jQuery for the front-end interface. Uses Rust libraries Rocket and Diesel. Written under time restriction.
 
+![screenshot](https://github.com/EvolvedAwesome/translator-app/raw/main/Documentation/screenshot-1.png)
+
 ## Running the webserver in development mode
 
 You will need to install `cargo` and the `diesel cli` and clone the project. To do this, run:
