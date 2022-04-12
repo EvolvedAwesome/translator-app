@@ -1,4 +1,6 @@
-# Translator stack using Rust and jQuery
+# Translator app using Rust and jQuery
+
+Translator app uses a jQuery frontend and a Rust backend to provide CRUD operations on a single-table database front-end. Restricted to using jQuery for the front-end interface. Uses Rust libraries Rocket and Diesel. Written under time restriction.
 
 ## Running the webserver in development mode
 
