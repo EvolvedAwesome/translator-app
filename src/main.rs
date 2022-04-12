@@ -18,9 +18,6 @@ use crate::schema::*;
 #[database("translations")]
 struct TranslationsDb(diesel::MysqlConnection);
 
-// An alias of the result method that means we only have to define a success condition
-type Result<T, E = Debug<diesel::result::Error>> = std::result::Result<T, E>;
-
 #[derive(Serialize, Deserialize, Queryable, Insertable)]
 #[table_name="phrase"]
 struct Phrase {
@@ -43,50 +40,74 @@ struct ReturnData {
 }
 
 #[post("/add_completion.json", data = "<post_data>")]
-async fn add_completion(db: TranslationsDb, post_data: Json<Phrase>) -> Result<Json<ReturnData>> {
-    db.run(move |conn| {
+async fn add_completion(db: TranslationsDb, post_data: Json<Phrase>) -> Result<Json<ReturnData>, Json<ReturnData>> {
+    let response = db.run(move |conn| {
         diesel::insert_into(phrase::table)
             .values(&*post_data)
             .execute(conn)
-    }).await?;
+    }).await;
 
-    Ok(Json(ReturnData {
-        status: "Success!",
-        message: Some(format!("Added completion.")),
-        data: None
-    }))
+    // API error handling
+    match response {
+        Ok(_n_rows_changed) => Ok(Json(ReturnData {
+            status: "Success!",
+            message: Some(format!("Added completion.")),
+            data: None
+        })),
+        Err(error) => Ok(Json(ReturnData {
+            status: "Failure",
+            message: Some(format!("Error: {}", error)),
+            data: None,
+        }))
+    }
 }
 
 #[get("/get_completions.json?<search_phrase>")]
-async fn get_completions(db: TranslationsDb, search_phrase: String) -> Result<Json<ReturnData>> {
+async fn get_completions(db: TranslationsDb, search_phrase: String) -> Result<Json<ReturnData>, Json<ReturnData>> {
     let search_phrase_out = search_phrase.clone();
-    let data= db.run(move |conn| {
+    let response = db.run(move |conn| {
         phrase::table.filter(phrase::english_text
             .like(format!("%{}%", search_phrase)))
             .load(conn)
-    }).await?; 
+    }).await; 
 
-    Ok(Json(ReturnData {
-        status: "Success!",
-        message: Some(format!("Found completions for \"{}\"", search_phrase_out)),
-        data: Some(data),
-    }))
+    // API error handling
+    match response {
+        Ok(data) => Ok(Json(ReturnData {
+            status: "Success!",
+            message: Some(format!("Found completions for \"{}\"", search_phrase_out)),
+            data: Some(data), 
+        })),
+        Err(error) => Ok(Json(ReturnData {
+            status: "Failure",
+            message: Some(format!("Error: {}", error)),
+            data: None,
+        }))
+    }
 }
 
 #[post("/remove_completion.json?", data = "<post_data>")]
-async fn remove_completions(db: TranslationsDb, post_data: Json<CompletionID>) -> Result<Json<ReturnData>>{
+async fn remove_completions(db: TranslationsDb, post_data: Json<CompletionID>) -> Result<Json<ReturnData>, Json<ReturnData>>{
     let id: i64 = post_data.translation_id.clone();
-    db.run(move |conn| {
+    let response = db.run(move |conn| {
         diesel::delete(phrase::table)
             .filter(phrase::id.eq(id))
             .execute(conn)
-    }).await?; 
+    }).await; 
 
-    Ok(Json(ReturnData {
-        status: "Success!",
-        message: Some(format!("Removed completion with id {}", id)),
-        data: None,
-    }))
+    // API error handling
+    match response {
+        Ok(_response) => Ok(Json(ReturnData {
+            status: "Success!",
+            message: Some(format!("Removed completion with id {}", id)),
+            data: None, 
+        })),
+        Err(error) => Ok(Json(ReturnData {
+            status: "Failure",
+            message: Some(format!("Error: {}", error)),
+            data: None,
+        }))
+    }
 }
 
 // Launch the web-server, composed of
